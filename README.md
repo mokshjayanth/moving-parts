@@ -106,9 +106,9 @@ that one place.
 ## Theme
 
 Light and dark, toggled in the header, defaulting to the system setting
-and remembered in `localStorage`. Press and hold the toggle (or double
-click, or press Escape with it focused) to clear the stored choice and
-follow the OS again. Every colour is a custom property in
+and remembered in `localStorage`. Once an override is set, a "Follow
+system theme" button appears in the footer to clear it; before that it
+stays hidden, since it has nothing to undo. Every colour is a custom property in
 `src/styles/global.css` — defined on `:root`, redefined under
 `prefers-color-scheme: dark` and again under `:root[data-theme='dark']`.
 Changing the palette means editing that one block.

@@ -90,6 +90,9 @@ const isCurrent = (href: string) => here === `${base}${href}`.replace(/\/$/, '')
           <li><a href={link.href} rel="me noopener">{link.label}</a></li>
         ))}
         <li><a href={`${base}/rss.xml`}>RSS</a></li>
+        <li>
+          <button id="theme-reset" type="button" hidden>Follow system theme</button>
+        </li>
       </ul>
     </footer>
 
@@ -185,10 +188,25 @@ const isCurrent = (href: string) => here === `${base}${href}`.replace(/\/$/, '')
         text-decoration: none;
       }
 
-      .elsewhere a:hover {
+      .elsewhere a:hover,
+      #theme-reset:hover {
         color: var(--text);
         text-decoration: underline;
         text-decoration-color: var(--accent);
+      }
+
+      /* Shown by script only once a theme override is stored. */
+      #theme-reset {
+        font: inherit;
+        color: var(--text-muted);
+        background: none;
+        border: 0;
+        padding: 0;
+        cursor: pointer;
+      }
+
+      #theme-reset[hidden] {
+        display: none;
       }
     </style>
   </body>
