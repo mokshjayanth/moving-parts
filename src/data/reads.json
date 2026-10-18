@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-18T10:56:51.703Z",
+  "updated": "2026-10-18T12:49:13.440Z",
   "source": "goodreads-rss",
   "current": [
     {
@@ -32,8 +32,7 @@
       "cover": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1581527774l/41881472._SX98_.jpg",
       "readAt": "2023-10-19",
       "addedAt": "2023-10-20",
-      "review": "",
-      "rating": 4
+      "review": ""
     },
     {
       "id": "56447987",
@@ -43,8 +42,7 @@
       "cover": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1609174688l/56447987._SX98_.jpg",
       "readAt": "2023-08-10",
       "addedAt": "2023-08-10",
-      "review": "",
-      "rating": 5
+      "review": ""
     },
     {
       "id": "195589455",
@@ -120,6 +118,16 @@
     }
   ],
   "abandoned": [
+    {
+      "id": "18505796",
+      "title": "10% Happier",
+      "author": "Dan   Harris",
+      "link": "https://www.goodreads.com/review/show/9034847895?utm_medium=api&utm_source=rss",
+      "cover": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1451446393l/18505796._SX98_.jpg",
+      "readAt": null,
+      "addedAt": "2026-10-18",
+      "review": ""
+    },
     {
       "id": "40695844",
       "title": "The 7 Habits of Highly Effective People",

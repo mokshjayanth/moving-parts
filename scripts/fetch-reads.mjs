@@ -98,7 +98,7 @@ async function main() {
 
   const books = items.map((item) => {
     const readAt = parseDate(field(item, 'user_read_at'));
-    const rating = Number(field(item, 'user_rating')) || 0;
+    // Personal ratings are deliberately not published.
     const book = {
       id: field(item, 'book_id'),
       title: cleanTitle(field(item, 'title')),
@@ -109,7 +109,6 @@ async function main() {
       addedAt: parseDate(field(item, 'user_date_added')),
       review: field(item, 'user_review'),
     };
-    if (rating > 0) book.rating = rating;
     return { shelf: classify(field(item, 'user_shelves'), readAt), ...book };
   });
 

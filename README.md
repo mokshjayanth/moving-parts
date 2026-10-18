@@ -90,6 +90,19 @@ explicitly to-read or currently-reading has been read, whatever custom
 tags it carries. If a book lands in the wrong place, fix its shelves on
 Goodreads and re-sync.
 
+## Feed
+
+`/rss.xml` carries published essays only — side quests are edited as the
+work goes on, and a feed that re-fires on every tweak is a nuisance.
+Autodiscovery is declared in the base layout, so readers find it from
+any page.
+
+## Links
+
+Name, description and the Elsewhere links live in `src/data/site.json`
+and are used by the home page, the footer and the feed. Edit them in
+that one place.
+
 ## Theme
 
 Light and dark, toggled in the header, defaulting to the system setting

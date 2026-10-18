@@ -13,7 +13,6 @@ type Book = {
   cover: string;
   readAt: string | null;
   addedAt: string | null;
-  rating?: number;
   review?: string;
 };
 
@@ -166,14 +165,8 @@ const updated = data.updated
       color: var(--text-muted);
     }
 
-    .year::before,
-    .rating::before {
+    .year::before {
       content: '· ';
-    }
-
-    .rating {
-      color: var(--accent);
-      letter-spacing: 0.05em;
     }
 
     .updated {
