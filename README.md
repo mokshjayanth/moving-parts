@@ -116,6 +116,19 @@ Changing the palette means editing that one block.
 The visual design is deliberately plain for now. The background is the
 next decision.
 
+## Type and shared patterns
+
+Serif throughout — body and headings share one face, so a page reads as
+a piece of writing rather than a document with a UI bolted on. Sans is
+kept for small chrome (nav, meta, labels), where a serif at 13px
+smears.
+
+Three patterns live in `global.css` rather than in each page, so they
+cannot drift apart: `.section-heading` (the ruled heading on Reads and
+Side Quests), `.lede` (the opening line under a page title), and
+`.link-row` (Elsewhere and the footer — navigation, so underlines
+appear on hover only).
+
 ## Deploying
 
 `.github/workflows/deploy.yml` builds and publishes on push to `main`.

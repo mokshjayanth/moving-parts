@@ -46,16 +46,18 @@
     place-items: center;
     inline-size: 2.75rem;
     block-size: 2.75rem;
-    background: none;
-    border: 1px solid var(--border);
+    /* A soft fill rather than an outline: still clearly a 44px target,
+       but it stops competing with the nav beside it. */
+    background: var(--bg-subtle);
+    border: 0;
     border-radius: 999px;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
-    transition: border-color 0.14s;
+    transition: background-color 0.14s;
   }
 
   button:hover {
-    border-color: var(--accent);
+    background: color-mix(in srgb, var(--text) 9%, transparent);
   }
 
   .icon {

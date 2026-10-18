@@ -41,7 +41,7 @@ const span = (started: Date, finished?: Date, status?: string) => {
   {groups.map(({ heading, items }) =>
     items.length === 0 ? null : (
       <section>
-        <h2>{heading}</h2>
+        <h2 class="section-heading">{heading}</h2>
         <ul class="list">
           {items.map((quest) => (
             <li>
@@ -66,20 +66,8 @@ const span = (started: Date, finished?: Date, status?: string) => {
   )}
 
   <style>
-    .lede {
-      color: var(--text-muted);
-      text-wrap: pretty;
-      max-width: 30rem;
-    }
-
     section {
       margin-block-start: 3rem;
-    }
-
-    section h2 {
-      font-size: var(--step-1);
-      padding-block-end: 0.4rem;
-      border-block-end: 1px solid var(--border);
     }
 
     .list {

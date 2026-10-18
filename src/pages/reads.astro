@@ -51,7 +51,7 @@ const updated = data.updated
     if (books.length === 0) return null;
     return (
       <section>
-        <h2>
+        <h2 class="section-heading">
           {heading} <span class="count">{books.length}</span>
         </h2>
         {note && <p class="note">{note}</p>}
@@ -90,23 +90,8 @@ const updated = data.updated
   {updated && <p class="updated">Synced from Goodreads on {updated}.</p>}
 
   <style>
-    .lede {
-      color: var(--text-muted);
-      text-wrap: pretty;
-      max-width: 30rem;
-    }
-
     section {
       margin-block-start: 3rem;
-    }
-
-    h2 {
-      display: flex;
-      align-items: baseline;
-      gap: 0.5rem;
-      font-size: var(--step-1);
-      padding-block-end: 0.4rem;
-      border-block-end: 1px solid var(--border);
     }
 
     .count {

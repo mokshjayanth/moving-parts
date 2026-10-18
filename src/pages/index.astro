@@ -17,8 +17,8 @@ import site from '../data/site.json';
     to understand what makes them go, and writing up what I find.
   </p>
 
-  <h2>Elsewhere</h2>
-  <ul class="links">
+  <h2 class="section-heading">Elsewhere</h2>
+  <ul class="link-row">
     {site.links.map((link) => (
       <li><a href={link.href} rel="me noopener">{link.label}</a></li>
     ))}
@@ -27,18 +27,11 @@ import site from '../data/site.json';
   <style>
     .lede {
       font-size: var(--step-1);
-      color: var(--text-muted);
       line-height: 1.5;
     }
 
-    .links {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1.1rem;
-      list-style: none;
-      padding: 0;
-      font-family: var(--font-sans);
-      font-size: var(--step--1);
+    .link-row {
+      margin-block-start: 1rem;
     }
   </style>
 </Base>
