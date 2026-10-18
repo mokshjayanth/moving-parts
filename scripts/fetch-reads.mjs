@@ -54,17 +54,18 @@ function parseDate(s) {
 /**
  * Decide which shelf a book belongs on.
  *
- * Goodreads does not emit the implicit "read" shelf, so a book with no
- * shelves but a read date is read; one with neither is treated as read
- * too, since it is on the shelf list at all.
+ * Every Goodreads book sits on exactly one exclusive shelf — read,
+ * currently-reading or to-read — alongside any number of custom tags
+ * like "fiction". The feed omits the implicit "read", so anything not
+ * explicitly to-read or currently-reading has been read. Custom tags
+ * carry no status and must not be treated as one.
  */
 function classify(shelves, readAt) {
   const s = shelves.split(',').map((x) => x.trim()).filter(Boolean);
   if (s.includes('currently-reading')) return 'current';
   if (s.includes('did-not-finish') || s.includes('abandoned')) return 'abandoned';
   if (s.includes('to-read')) return 'queue';
-  if (readAt) return 'finished';
-  return s.length === 0 ? 'finished' : 'queue';
+  return 'finished';
 }
 
 async function fetchPage(url, page) {

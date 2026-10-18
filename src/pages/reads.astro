@@ -22,7 +22,7 @@ type Shelf = { key: keyof typeof reads; heading: string; note?: string };
 const shelves: Shelf[] = [
   { key: 'current', heading: 'Currently reading' },
   { key: 'finished', heading: 'Read' },
-  { key: 'queue', heading: 'Up next' },
+  { key: 'queue', heading: 'Reading list' },
   { key: 'abandoned', heading: 'Put down', note: 'Started, not finished.' },
 ];
 
@@ -41,6 +41,12 @@ const updated = data.updated
 
 <Base title="Reads — Moving Parts" description="What I'm reading.">
   <h1>Reads</h1>
+
+  <p class="lede">
+    I'm a Sunday reader. I don't get through many, and I only pick up
+    what genuinely piques my interest — so this is a short shelf, kept
+    honest.
+  </p>
 
   {shelves.map(({ key, heading, note }) => {
     const books = (data[key] ?? []) as Book[];
@@ -86,6 +92,12 @@ const updated = data.updated
   {updated && <p class="updated">Synced from Goodreads on {updated}.</p>}
 
   <style>
+    .lede {
+      color: var(--text-muted);
+      text-wrap: pretty;
+      max-width: 30rem;
+    }
+
     section {
       margin-block-start: 3rem;
     }

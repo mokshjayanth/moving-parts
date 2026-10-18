@@ -61,10 +61,15 @@ unreachable the script logs it, exits 0 and leaves the committed JSON in
 place, so an outage there cannot fail a deploy.
 
 Shelves are inferred from `user_shelves`: `currently-reading` → current,
-`to-read` → up next, `did-not-finish` → put down, everything else →
-read. Goodreads does not emit an explicit `read` shelf, which is why
-that last case is a fallback. If a book lands in the wrong place, fix
-its shelves on Goodreads and re-sync.
+`to-read` → reading list, `did-not-finish` → put down, everything else
+→ read.
+
+Every Goodreads book sits on exactly one exclusive shelf — read,
+currently-reading or to-read — alongside any number of custom tags like
+`fiction`. The feed omits the implicit `read`, so anything not
+explicitly to-read or currently-reading has been read, whatever custom
+tags it carries. If a book lands in the wrong place, fix its shelves on
+Goodreads and re-sync.
 
 ## Theme
 
