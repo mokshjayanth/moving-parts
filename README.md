@@ -7,7 +7,7 @@ Personal site and blog. Astro, static output, deployed to GitHub Pages.
 ```sh
 nvm use        # Node 22.23.3, pinned in .nvmrc
 npm install
-npm run dev    # http://localhost:4321/movingparts/
+npm run dev    # http://localhost:4321/moving-parts/
 npm run build  # -> dist/
 ```
 
@@ -135,6 +135,6 @@ appear on hover only).
 It needs Pages enabled on the repo with source set to GitHub Actions.
 
 The site is configured for a project site at
-`mokshjayanth.github.io/movingparts/` — `base: '/movingparts'` in
+`mokshjayanth.github.io/moving-parts/` — `base: '/moving-parts'` in
 `astro.config.mjs`. Attaching a custom domain later means dropping `base`
 and adding a `CNAME`.
