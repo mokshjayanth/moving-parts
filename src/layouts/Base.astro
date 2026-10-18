@@ -1,7 +1,6 @@
 ---
 import ThemeToggle from '../components/ThemeToggle.astro';
 import Backdrop from '../components/Backdrop.astro';
-import Masthead from '../components/Masthead.astro';
 import site from '../data/site.json';
 import '../styles/global.css';
 
@@ -10,15 +9,12 @@ interface Props {
   description?: string;
   /** The landing page carries the identity; everything else stays calm. */
   backdrop?: 'full' | 'quiet';
-  /** True on the home page: the mark is not a link to itself. */
-  home?: boolean;
 }
 
 const {
   title,
   description = 'Essays, reading and side quests.',
   backdrop = 'quiet',
-  home = false,
 } = Astro.props;
 
 const nav = [
@@ -64,10 +60,6 @@ const isCurrent = (href: string) => here === `${base}${href}`.replace(/\/$/, '')
     <Backdrop intensity={backdrop} />
 
     <header>
-      <div class="bar">
-        <Masthead home={home} />
-        <ThemeToggle />
-      </div>
       <nav aria-label="Primary">
         <ul>
           {nav.map((item) => (
@@ -82,6 +74,7 @@ const isCurrent = (href: string) => here === `${base}${href}`.replace(/\/$/, '')
           ))}
         </ul>
       </nav>
+      <ThemeToggle />
     </header>
 
     <main id="main">
@@ -123,20 +116,16 @@ const isCurrent = (href: string) => here === `${base}${href}`.replace(/\/$/, '')
       }
 
       header {
-        padding-block: 1.75rem 2.5rem;
-      }
-
-      .bar {
         display: flex;
-        gap: 1rem;
+        gap: 0.75rem 1rem;
         align-items: center;
         justify-content: space-between;
+        padding-block: 1.75rem 3rem;
       }
 
       nav {
-        margin-block-start: 1rem;
-        padding-block-start: 0.9rem;
-        border-block-start: 1px solid var(--border);
+        /* Let the nav shrink before the toggle does. */
+        min-inline-size: 0;
       }
 
       nav ul {
