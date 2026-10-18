@@ -2,9 +2,10 @@
 /**
  * Theme toggle: light ⇄ dark.
  *
- * Auto is the default — a visitor who never touches this keeps their
- * system setting for good. Tapping sets an explicit override, and the
- * footer then offers a visible way back rather than a hidden gesture.
+ * Auto is the default and needs no control: a visitor who never touches
+ * this keeps their system setting. Tapping stores an explicit override,
+ * which is then permanent — deliberately, since UI to un-choose costs
+ * every visitor something to serve almost none.
  */
 ---
 
@@ -64,13 +65,14 @@
     block-size: 17px;
   }
 
+  /* Both glyphs share one grid cell. Which one shows is decided by
+     the theme, so every rule below is scoped to a theme state rather
+     than relying on source order to beat a bare `display: none`. */
   .icon svg {
     grid-area: 1 / 1;
-    display: none;
   }
 
   [data-icon='light'] {
-    display: block;
     color: var(--sun);
   }
 
@@ -78,13 +80,31 @@
     color: var(--moon);
   }
 
+  /* Light is in force unless something says otherwise. */
+  [data-icon='dark'] {
+    display: none;
+  }
+
+  [data-icon='light'] {
+    display: block;
+  }
+
+  /* System dark, with no explicit override. */
+  @media (prefers-color-scheme: dark) {
+    :global(:root:not([data-theme='light'])) [data-icon='light'] {
+      display: none;
+    }
+
+    :global(:root:not([data-theme='light'])) [data-icon='dark'] {
+      display: block;
+    }
+  }
+
+  /* Explicit choices always win over the two rules above. */
+  :global(:root[data-theme='light']) [data-icon='light'] { display: block; }
+  :global(:root[data-theme='light']) [data-icon='dark'] { display: none; }
   :global(:root[data-theme='dark']) [data-icon='light'] { display: none; }
   :global(:root[data-theme='dark']) [data-icon='dark'] { display: block; }
-
-  @media (prefers-color-scheme: dark) {
-    :global(:root:not([data-theme='light'])) [data-icon='light'] { display: none; }
-    :global(:root:not([data-theme='light'])) [data-icon='dark'] { display: block; }
-  }
 
   @media (prefers-reduced-motion: reduce) {
     button {
@@ -110,16 +130,12 @@
     /** What is rendered right now, stored choice or OS. */
     const active = () => stored() ?? (media.matches ? 'dark' : 'light');
 
-    /** The footer offer appears only once an override is in force. */
     const refresh = () => {
       const btn = document.getElementById('theme-toggle');
-      if (btn) {
-        const to = active() === 'dark' ? 'light' : 'dark';
-        btn.setAttribute('aria-label', `Switch to ${to} mode`);
-        btn.title = `Switch to ${to} mode`;
-      }
-      const reset = document.getElementById('theme-reset');
-      if (reset) reset.hidden = !stored();
+      if (!btn) return;
+      const to = active() === 'dark' ? 'light' : 'dark';
+      btn.setAttribute('aria-label', `Switch to ${to} mode`);
+      btn.title = `Switch to ${to} mode`;
     };
 
     refresh();
@@ -130,14 +146,6 @@
         localStorage.setItem('theme', next);
       } catch {}
       root.setAttribute('data-theme', next);
-      refresh();
-    });
-
-    document.getElementById('theme-reset')?.addEventListener('click', () => {
-      try {
-        localStorage.removeItem('theme');
-      } catch {}
-      root.removeAttribute('data-theme');
       refresh();
     });
 
