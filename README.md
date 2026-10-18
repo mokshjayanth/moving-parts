@@ -84,16 +84,18 @@ CI re-syncs on every deploy and on a daily cron. If Goodreads is
 unreachable the script logs it, exits 0 and leaves the committed JSON in
 place, so an outage there cannot fail a deploy.
 
-Shelves are inferred from `user_shelves`: `currently-reading` → current,
-`to-read` → reading list, `did-not-finish` → put down, everything else
-→ read.
+Each shelf is fetched separately — `currently-reading`, `did-not-finish`,
+`to-read`, `read` — and a book is filed under the first it appears on.
+A final `#ALL#` pass catches anything on no status shelf, which
+Goodreads treats as read.
 
-Every Goodreads book sits on exactly one exclusive shelf — read,
-currently-reading or to-read — alongside any number of custom tags like
-`fiction`. The feed omits the implicit `read`, so anything not
-explicitly to-read or currently-reading has been read, whatever custom
-tags it carries. If a book lands in the wrong place, fix its shelves on
-Goodreads and re-sync.
+This is deliberate. The `#ALL#` feed's `user_shelves` field goes stale:
+move a book to currently-reading and its own shelf feed updates at
+once, while `#ALL#` keeps reporting the old shelves for some time. The
+per-shelf feeds are the source of truth.
+
+If a book lands in the wrong place, fix its shelves on Goodreads and
+re-sync.
 
 ## Feed
 

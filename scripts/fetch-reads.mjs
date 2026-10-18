@@ -57,24 +57,25 @@ function parseDate(s) {
 }
 
 /**
- * Decide which shelf a book belongs on.
+ * Shelves to query, in priority order. A book is filed under the first
+ * one it appears on.
  *
- * Every Goodreads book sits on exactly one exclusive shelf — read,
- * currently-reading or to-read — alongside any number of custom tags
- * like "fiction". The feed omits the implicit "read", so anything not
- * explicitly to-read or currently-reading has been read. Custom tags
- * carry no status and must not be treated as one.
+ * These are queried individually rather than read from the #ALL# feed's
+ * user_shelves field, which Goodreads does not reliably update: moving
+ * a book to currently-reading shows up immediately on that shelf's own
+ * feed while #ALL# still reports the old shelves. The per-shelf feeds
+ * are the source of truth.
  */
-function classify(shelves, readAt) {
-  const s = shelves.split(',').map((x) => x.trim()).filter(Boolean);
-  if (s.includes('currently-reading')) return 'current';
-  if (s.includes('did-not-finish') || s.includes('abandoned')) return 'abandoned';
-  if (s.includes('to-read')) return 'queue';
-  return 'finished';
-}
+const SHELVES = [
+  { name: 'currently-reading', bucket: 'current' },
+  { name: 'did-not-finish', bucket: 'abandoned' },
+  { name: 'to-read', bucket: 'queue' },
+  { name: 'read', bucket: 'finished' },
+];
 
-async function fetchPage(url, page) {
+async function fetchPage(url, shelf, page) {
   const u = new URL(url);
+  u.searchParams.set('shelf', shelf);
   u.searchParams.set('page', String(page));
   u.searchParams.set('per_page', String(PER_PAGE));
 
@@ -83,6 +84,33 @@ async function fetchPage(url, page) {
   });
   if (!res.ok) throw new Error(`Goodreads returned HTTP ${res.status}`);
   return res.text();
+}
+
+/** Every item on one shelf, following pagination. */
+async function fetchShelf(url, shelf) {
+  const items = [];
+  for (let page = 1; page <= MAX_PAGES; page++) {
+    const xml = await fetchPage(url, shelf, page);
+    const found = xml.match(/<item>[\s\S]*?<\/item>/g) ?? [];
+    items.push(...found);
+    if (found.length < PER_PAGE) break;
+  }
+  return items;
+}
+
+function toBook(item) {
+  const readAt = parseDate(field(item, 'user_read_at'));
+  // Personal ratings are deliberately not published.
+  return {
+    id: field(item, 'book_id'),
+    title: cleanTitle(field(item, 'title')),
+    author: field(item, 'author_name'),
+    link: field(item, 'link'),
+    cover: field(item, 'book_medium_image_url'),
+    readAt,
+    addedAt: parseDate(field(item, 'user_date_added')),
+    review: field(item, 'user_review'),
+  };
 }
 
 async function main() {
@@ -107,32 +135,26 @@ async function main() {
     );
   }
 
-  const items = [];
-  for (let page = 1; page <= MAX_PAGES; page++) {
-    const xml = await fetchPage(feedUrl, page);
-    const found = xml.match(/<item>[\s\S]*?<\/item>/g) ?? [];
-    items.push(...found);
-    if (found.length < PER_PAGE) break;
+  const buckets = { current: [], finished: [], queue: [], abandoned: [] };
+  const seen = new Set();
+
+  for (const { name, bucket } of SHELVES) {
+    for (const item of await fetchShelf(feedUrl, name)) {
+      const book = toBook(item);
+      if (seen.has(book.id)) continue; // first shelf wins
+      seen.add(book.id);
+      buckets[bucket].push(book);
+    }
   }
 
-  const books = items.map((item) => {
-    const readAt = parseDate(field(item, 'user_read_at'));
-    // Personal ratings are deliberately not published.
-    const book = {
-      id: field(item, 'book_id'),
-      title: cleanTitle(field(item, 'title')),
-      author: field(item, 'author_name'),
-      link: field(item, 'link'),
-      cover: field(item, 'book_medium_image_url'),
-      readAt,
-      addedAt: parseDate(field(item, 'user_date_added')),
-      review: field(item, 'user_review'),
-    };
-    return { shelf: classify(field(item, 'user_shelves'), readAt), ...book };
-  });
-
-  const strip = ({ shelf, ...rest }) => rest;
-  const by = (shelf) => books.filter((b) => b.shelf === shelf).map(strip);
+  // Anything on no status shelf at all — Goodreads omits the implicit
+  // "read" for some older entries — is treated as read.
+  for (const item of await fetchShelf(feedUrl, '#ALL#')) {
+    const book = toBook(item);
+    if (seen.has(book.id)) continue;
+    seen.add(book.id);
+    buckets.finished.push(book);
+  }
 
   const newest = (a, b) => (b.readAt ?? '').localeCompare(a.readAt ?? '');
   const added = (a, b) => (b.addedAt ?? '').localeCompare(a.addedAt ?? '');
@@ -140,17 +162,17 @@ async function main() {
   const data = {
     updated: new Date().toISOString(),
     source: 'goodreads-rss',
-    current: by('current').sort(added),
-    finished: by('finished').sort(newest),
-    queue: by('queue').sort(added),
-    abandoned: by('abandoned').sort(added),
+    current: buckets.current.sort(added),
+    finished: buckets.finished.sort(newest),
+    queue: buckets.queue.sort(added),
+    abandoned: buckets.abandoned.sort(added),
   };
 
   await writeFile(OUT, JSON.stringify(data, null, 2) + '\n');
 
   const n = (k) => data[k].length;
   console.log(
-    `Wrote ${path.basename(OUT)} — ${books.length} books ` +
+    `Wrote ${path.basename(OUT)} — ${seen.size} books ` +
       `(current ${n('current')}, finished ${n('finished')}, ` +
       `queue ${n('queue')}, abandoned ${n('abandoned')}).`
   );
