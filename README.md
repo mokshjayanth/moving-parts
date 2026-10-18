@@ -75,6 +75,11 @@ npm run sync:reads
 The feed URL carries a private key, so it lives in `.env` locally and in
 the `GOODREADS_RSS_URL` repository secret on CI — never in the repo.
 
+A `.env` file wants the value quoted; GitHub's secret field does not,
+and stores whatever is typed. The script trims stray quotes and
+whitespace and checks the URL parses before fetching, so a value pasted
+from one into the other still works and says so plainly if it cannot.
+
 CI re-syncs on every deploy and on a daily cron. If Goodreads is
 unreachable the script logs it, exits 0 and leaves the committed JSON in
 place, so an outage there cannot fail a deploy.

@@ -20,7 +20,12 @@ const OUT = fileURLToPath(new URL('../src/data/reads.json', import.meta.url));
 const PER_PAGE = 100;
 const MAX_PAGES = 20;
 
-const feedUrl = process.env.GOODREADS_RSS_URL;
+// Trim whitespace and any stray surrounding quotes: a .env file needs
+// them, GitHub's secret field does not, and pasting one into the other
+// is an easy way to store a URL that cannot be parsed.
+const feedUrl = (process.env.GOODREADS_RSS_URL ?? '')
+  .trim()
+  .replace(/^['"]|['"]$/g, '');
 
 /** Pull one tag out of an item, unwrapping CDATA and decoding entities. */
 function field(item, tag) {
@@ -86,6 +91,20 @@ async function main() {
       'GOODREADS_RSS_URL is not set — keeping the existing src/data/reads.json.'
     );
     return;
+  }
+
+  // Fail early and legibly on a malformed URL rather than reporting a
+  // bare "Invalid URL" from deep inside fetch().
+  try {
+    const u = new URL(feedUrl);
+    if (!/^https?:$/.test(u.protocol)) {
+      throw new Error(`unexpected protocol ${u.protocol}`);
+    }
+  } catch (err) {
+    throw new Error(
+      `GOODREADS_RSS_URL is not a usable URL (${err.message}). ` +
+        'Store it without surrounding quotes.'
+    );
   }
 
   const items = [];
