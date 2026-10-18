@@ -1,27 +1,17 @@
 ---
 /**
- * Theme control: cycles Auto → Light → Dark.
+ * Theme toggle: light ⇄ dark on tap.
  *
- * Three states, not two, so the site can always be handed back to the
- * OS setting — a two-state toggle locks you out of Auto on first tap.
- * One button rather than three keeps it to a single tap target, which
- * matters at phone width where the header already wraps.
- *
- * The icon shows the state that is currently in force; the accessible
- * name says so in words, and announces what a tap will do.
+ * Two states, because a three-state cycle makes a mistaken tap cost two
+ * more to undo. Auto is still reachable — press and hold, or double
+ * click, to clear the stored choice and follow the OS again. That is
+ * mentioned in the tooltip rather than shown, since almost nobody
+ * needs it and the default is Auto anyway.
  */
 ---
 
 <button id="theme-toggle" type="button">
   <span class="icon" aria-hidden="true">
-    <!-- auto: a dial, half filled -->
-    <svg viewBox="0 0 24 24" width="16" height="16" data-icon="auto">
-      <circle cx="12" cy="12" r="8.4" fill="none" stroke="currentColor"
-              stroke-width="1.6" />
-      <path d="M12 3.6a8.4 8.4 0 0 0 0 16.8Z" fill="currentColor" />
-    </svg>
-
-    <!-- light: sun -->
     <svg viewBox="0 0 24 24" width="16" height="16" fill="none"
          stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
          data-icon="light">
@@ -29,7 +19,6 @@
       <path d="M12 2.6v2.1M12 19.3v2.1M4.3 4.3l1.5 1.5M18.2 18.2l1.5 1.5M2.6 12h2.1M19.3 12h2.1M4.3 19.7l1.5-1.5M18.2 5.8l1.5-1.5" />
     </svg>
 
-    <!-- dark: moon -->
     <svg viewBox="0 0 24 24" width="16" height="16" fill="none"
          stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
          stroke-linejoin="round" data-icon="dark">
@@ -42,7 +31,7 @@
   button {
     display: inline-grid;
     place-items: center;
-    /* 44px tap target, per the usual mobile minimum. */
+    /* 44px, the usual minimum for a comfortable tap. */
     inline-size: 2.75rem;
     block-size: 2.75rem;
     color: var(--text-muted);
@@ -50,11 +39,11 @@
     border: 1px solid var(--border);
     border-radius: 999px;
     cursor: pointer;
-    transition: color 0.12s, border-color 0.12s;
+    -webkit-tap-highlight-color: transparent;
+    transition: color 0.14s, border-color 0.14s;
   }
 
   button:hover {
-    color: var(--text);
     border-color: var(--accent);
   }
 
@@ -65,21 +54,28 @@
     block-size: 16px;
   }
 
-  /* All three glyphs share one cell; the state picks which shows. */
+  /* Both glyphs share a cell; the active theme picks which shows. */
   .icon svg {
     grid-area: 1 / 1;
     display: none;
   }
 
-  :global(:root[data-theme-choice='auto']) [data-icon='auto'],
-  :global(:root[data-theme-choice='light']) [data-icon='light'],
-  :global(:root[data-theme-choice='dark']) [data-icon='dark'] {
+  /* Light in force: a warm sun. */
+  [data-icon='light'] {
     display: block;
+    color: var(--sun);
   }
 
-  /* Before the script runs, show the auto glyph rather than nothing. */
-  :global(:root:not([data-theme-choice])) [data-icon='auto'] {
-    display: block;
+  [data-icon='dark'] {
+    color: var(--moon);
+  }
+
+  :global(:root[data-theme='dark']) [data-icon='light'] { display: none; }
+  :global(:root[data-theme='dark']) [data-icon='dark'] { display: block; }
+
+  @media (prefers-color-scheme: dark) {
+    :global(:root:not([data-theme='light'])) [data-icon='light'] { display: none; }
+    :global(:root:not([data-theme='light'])) [data-icon='dark'] { display: block; }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -92,47 +88,87 @@
 <script is:inline>
   (() => {
     const root = document.documentElement;
-    const order = ['auto', 'light', 'dark'];
-    const says = {
-      auto: 'Theme: following system. Switch to light.',
-      light: 'Theme: light. Switch to dark.',
-      dark: 'Theme: dark. Switch to system.',
-    };
+    const media = window.matchMedia('(prefers-color-scheme: dark)');
 
-    const read = () => {
+    const stored = () => {
       try {
         const v = localStorage.getItem('theme');
-        return v === 'light' || v === 'dark' ? v : 'auto';
+        return v === 'light' || v === 'dark' ? v : null;
       } catch {
-        return 'auto';
+        return null;
       }
     };
 
-    const apply = (choice) => {
-      if (choice === 'auto') root.removeAttribute('data-theme');
-      else root.setAttribute('data-theme', choice);
-      root.setAttribute('data-theme-choice', choice);
+    /** What is actually rendered right now. */
+    const active = () => stored() ?? (media.matches ? 'dark' : 'light');
 
+    const describe = () => {
       const btn = document.getElementById('theme-toggle');
-      if (btn) {
-        btn.setAttribute('aria-label', says[choice]);
-        btn.title = says[choice];
-      }
+      if (!btn) return;
+      const to = active() === 'dark' ? 'light' : 'dark';
+      const label = `Switch to ${to} mode`;
+      btn.setAttribute('aria-label', label);
+      btn.title = stored()
+        ? `${label} (hold to follow system)`
+        : `${label} (currently following system)`;
     };
 
-    apply(read());
-
-    document.getElementById('theme-toggle')?.addEventListener('click', () => {
-      const next = order[(order.indexOf(read()) + 1) % order.length];
+    const set = (choice) => {
       try {
-        if (next === 'auto') localStorage.removeItem('theme');
-        else localStorage.setItem('theme', next);
+        if (choice) localStorage.setItem('theme', choice);
+        else localStorage.removeItem('theme');
       } catch {}
-      apply(next);
+      if (choice) root.setAttribute('data-theme', choice);
+      else root.removeAttribute('data-theme');
+      describe();
+    };
+
+    describe();
+
+    const btn = document.getElementById('theme-toggle');
+    let held = false;
+    let timer = 0;
+
+    const hold = () => {
+      timer = window.setTimeout(() => {
+        held = true;
+        set(null); // back to following the OS
+      }, 550);
+    };
+
+    const release = () => {
+      clearTimeout(timer);
+    };
+
+    btn?.addEventListener('pointerdown', hold);
+    btn?.addEventListener('pointerup', release);
+    btn?.addEventListener('pointerleave', release);
+    btn?.addEventListener('pointercancel', release);
+
+    btn?.addEventListener('click', () => {
+      if (held) {
+        held = false; // the hold already handled it
+        return;
+      }
+      set(active() === 'dark' ? 'light' : 'dark');
+    });
+
+    btn?.addEventListener('dblclick', () => set(null));
+
+    // Keyboard: Enter/Space toggles, Escape resets to Auto.
+    btn?.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && stored()) {
+        e.preventDefault();
+        set(null);
+      }
+    });
+
+    media.addEventListener('change', () => {
+      if (!stored()) describe();
     });
 
     window.addEventListener('storage', (e) => {
-      if (e.key === 'theme') apply(read());
+      if (e.key === 'theme') describe();
     });
   })();
 </script>

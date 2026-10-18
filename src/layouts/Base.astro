@@ -50,9 +50,6 @@ const isCurrent = (href: string) => here === `${base}${href}`.replace(/\/$/, '')
         const t = localStorage.getItem('theme');
         if (t === 'light' || t === 'dark') {
           document.documentElement.setAttribute('data-theme', t);
-          document.documentElement.setAttribute('data-theme-choice', t);
-        } else {
-          document.documentElement.setAttribute('data-theme-choice', 'auto');
         }
       } catch {}
     </script>
