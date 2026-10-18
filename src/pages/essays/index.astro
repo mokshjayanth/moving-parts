@@ -1,0 +1,71 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const essays = (await getCollection('essays', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+);
+
+const fmt = (d: Date) =>
+  d.toLocaleDateString('en-GB', { year: 'numeric', month: 'long' });
+---
+
+<Base title="Essays — Moving Parts" description="Essays.">
+  <h1>Essays</h1>
+
+  {essays.length === 0 ? (
+    <p class="empty">Nothing published yet.</p>
+  ) : (
+    <ul class="list">
+      {essays.map((essay) => (
+        <li>
+          <a href={`${base}/essays/${essay.id}`}>{essay.data.title}</a>
+          <p class="meta">
+            <time datetime={essay.data.date.toISOString()}>
+              {fmt(essay.data.date)}
+            </time>
+          </p>
+          <p class="desc">{essay.data.description}</p>
+        </li>
+      ))}
+    </ul>
+  )}
+
+  <style>
+    .list {
+      list-style: none;
+      padding: 0;
+      display: grid;
+      gap: 2.5rem;
+    }
+
+    .list > li > a {
+      font-family: var(--font-sans);
+      font-size: var(--step-1);
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .list > li > a:hover {
+      text-decoration: underline;
+      text-decoration-color: var(--accent);
+    }
+
+    .meta {
+      margin: 0.25rem 0 0.5rem;
+      font-family: var(--font-sans);
+      font-size: var(--step--1);
+      color: var(--text-muted);
+    }
+
+    .desc {
+      margin: 0;
+      color: var(--text-muted);
+    }
+
+    .empty {
+      color: var(--text-muted);
+    }
+  </style>
+</Base>

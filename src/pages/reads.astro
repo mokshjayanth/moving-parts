@@ -1,0 +1,88 @@
+---
+import Base from '../layouts/Base.astro';
+import reads from '../data/reads.json';
+
+// Hand-maintained for now: edit src/data/reads.json.
+// Goodreads' API is retired; if this ever outgrows a JSON file the
+// candidates are Open Library, Hardcover or Literal.
+const shelves = [
+  { key: 'current', heading: 'Currently reading' },
+  { key: 'finished', heading: 'Finished' },
+  { key: 'queue', heading: 'Up next' },
+  { key: 'recommended', heading: 'Recommendations' },
+] as const;
+
+type Book = {
+  title: string;
+  author: string;
+  year?: number;
+  note?: string;
+};
+
+const data = reads as Record<string, Book[]>;
+---
+
+<Base title="Reads — Moving Parts" description="What I'm reading.">
+  <h1>Reads</h1>
+
+  {shelves.map(({ key, heading }) => {
+    const books = data[key] ?? [];
+    if (books.length === 0) return null;
+    return (
+      <section>
+        <h2>{heading}</h2>
+        <ul class="books">
+          {books.map((book) => (
+            <li>
+              <span class="title">{book.title}</span>
+              <span class="author">{book.author}</span>
+              {book.year && <span class="year">{book.year}</span>}
+              {book.note && <p class="note">{book.note}</p>}
+            </li>
+          ))}
+        </ul>
+      </section>
+    );
+  })}
+
+  <style>
+    section {
+      margin-block-start: 3rem;
+    }
+
+    h2 {
+      font-size: var(--step-1);
+      padding-block-end: 0.4rem;
+      border-block-end: 1px solid var(--border);
+    }
+
+    .books {
+      list-style: none;
+      padding: 0;
+      display: grid;
+      gap: 1.25rem;
+    }
+
+    .title {
+      display: block;
+      font-weight: 600;
+    }
+
+    .author,
+    .year {
+      font-family: var(--font-sans);
+      font-size: var(--step--1);
+      color: var(--text-muted);
+    }
+
+    .year::before {
+      content: ' · ';
+    }
+
+    .note {
+      margin: 0.3rem 0 0;
+      color: var(--text-muted);
+      font-size: var(--step--1);
+    }
+  </style>
+</Base>

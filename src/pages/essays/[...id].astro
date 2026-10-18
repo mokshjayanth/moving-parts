@@ -1,0 +1,75 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+
+export async function getStaticPaths() {
+  const essays = await getCollection('essays');
+  return essays.map((essay) => ({
+    params: { id: essay.id },
+    props: { essay },
+  }));
+}
+
+const { essay } = Astro.props;
+const { Content } = await render(essay);
+
+const fmt = (d: Date) =>
+  d.toLocaleDateString('en-GB', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+---
+
+<Base title={`${essay.data.title} — Moving Parts`} description={essay.data.description}>
+  <article>
+    <header class="head">
+      <h1>{essay.data.title}</h1>
+      <p class="meta">
+        <time datetime={essay.data.date.toISOString()}>{fmt(essay.data.date)}</time>
+        {essay.data.draft && <span class="draft">Draft</span>}
+      </p>
+    </header>
+
+    <div class="prose">
+      <Content />
+    </div>
+  </article>
+
+  <style>
+    .head {
+      margin-block-end: 2.5rem;
+    }
+
+    .meta {
+      font-family: var(--font-sans);
+      font-size: var(--step--1);
+      color: var(--text-muted);
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    .draft {
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 0.1rem 0.5rem;
+    }
+
+    .prose :global(h2) {
+      margin-block: 2.5rem 0.75rem;
+    }
+
+    .prose :global(blockquote) {
+      margin-inline: 0;
+      padding-inline-start: 1rem;
+      border-inline-start: 2px solid var(--border);
+      color: var(--text-muted);
+    }
+
+    .prose :global(img) {
+      max-width: 100%;
+      height: auto;
+    }
+  </style>
+</Base>

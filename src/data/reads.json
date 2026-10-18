@@ -1,0 +1,30 @@
+{
+  "current": [
+    {
+      "title": "The Character of Physical Law",
+      "author": "Richard Feynman",
+      "note": "Rereading for the chapter on conservation."
+    }
+  ],
+  "finished": [
+    {
+      "title": "Thinking in Systems",
+      "author": "Donella Meadows",
+      "year": 2025,
+      "note": ""
+    }
+  ],
+  "queue": [
+    {
+      "title": "Gödel, Escher, Bach",
+      "author": "Douglas Hofstadter"
+    }
+  ],
+  "recommended": [
+    {
+      "title": "The Design of Everyday Things",
+      "author": "Don Norman",
+      "note": "The clearest book about why things feel broken."
+    }
+  ]
+}

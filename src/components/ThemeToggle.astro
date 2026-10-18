@@ -1,0 +1,57 @@
+---
+// Cycles system -> light -> dark. The chosen value is stored in
+// localStorage; "system" removes the override entirely.
+---
+
+<button id="theme-toggle" type="button" aria-label="Switch colour theme">
+  <span data-theme-label>Theme</span>
+</button>
+
+<style>
+  button {
+    font-family: var(--font-sans);
+    font-size: var(--step--1);
+    color: var(--text-muted);
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.25rem 0.7rem;
+    cursor: pointer;
+  }
+
+  button:hover {
+    color: var(--text);
+    border-color: var(--accent);
+  }
+</style>
+
+<script is:inline>
+  (() => {
+    const order = ['system', 'light', 'dark'];
+    const label = { system: 'Auto', light: 'Light', dark: 'Dark' };
+
+    const apply = (mode) => {
+      const root = document.documentElement;
+      if (mode === 'system') root.removeAttribute('data-theme');
+      else root.setAttribute('data-theme', mode);
+      const el = document.querySelector('[data-theme-label]');
+      if (el) el.textContent = label[mode];
+    };
+
+    let current = 'system';
+    try {
+      current = localStorage.getItem('theme') || 'system';
+    } catch {}
+    if (!order.includes(current)) current = 'system';
+    apply(current);
+
+    document.getElementById('theme-toggle')?.addEventListener('click', () => {
+      current = order[(order.indexOf(current) + 1) % order.length];
+      apply(current);
+      try {
+        if (current === 'system') localStorage.removeItem('theme');
+        else localStorage.setItem('theme', current);
+      } catch {}
+    });
+  })();
+</script>
