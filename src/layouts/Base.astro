@@ -1,13 +1,20 @@
 ---
 import ThemeToggle from '../components/ThemeToggle.astro';
+import Backdrop from '../components/Backdrop.astro';
 import '../styles/global.css';
 
 interface Props {
   title: string;
   description?: string;
+  /** The landing page carries the identity; everything else stays calm. */
+  backdrop?: 'full' | 'quiet';
 }
 
-const { title, description = 'Essays, reading and side quests.' } = Astro.props;
+const {
+  title,
+  description = 'Essays, reading and side quests.',
+  backdrop = 'quiet',
+} = Astro.props;
 
 const nav = [
   { href: '/', label: 'Front Matter' },
@@ -42,6 +49,8 @@ const isCurrent = (href: string) => here === `${base}${href}`.replace(/\/$/, '')
   </head>
   <body>
     <a class="skip" href="#main">Skip to content</a>
+
+    <Backdrop intensity={backdrop} />
 
     <header>
       <nav aria-label="Primary">

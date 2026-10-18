@@ -1,112 +1,144 @@
 ---
-// Two states: light and dark. With nothing stored we follow the system
-// setting, so the first click always flips away from what is on screen.
-// Once clicked the choice is explicit and persists.
+/**
+ * Theme control: Auto, Light, Dark.
+ *
+ * Auto is the default and follows the OS. Picking Light or Dark stores
+ * an explicit override; picking Auto clears it, so the site can always
+ * be handed back to the system setting.
+ *
+ * Rendered as a radiogroup rather than a switch: three states, each
+ * with a stable name, which is what assistive tech expects.
+ */
+
+const options = [
+  { value: 'auto', label: 'Auto' },
+  { value: 'light', label: 'Light' },
+  { value: 'dark', label: 'Dark' },
+];
 ---
 
-<button id="theme-toggle" type="button" role="switch" aria-label="Dark mode">
-  <span class="icon" aria-hidden="true">
-    <svg viewBox="0 0 24 24" width="15" height="15" fill="none"
-         stroke="currentColor" stroke-width="1.6"
-         stroke-linecap="round" data-icon="sun">
-      <circle cx="12" cy="12" r="4.2" />
-      <path d="M12 2.6v2.1M12 19.3v2.1M4.3 4.3l1.5 1.5M18.2 18.2l1.5 1.5M2.6 12h2.1M19.3 12h2.1M4.3 19.7l1.5-1.5M18.2 5.8l1.5-1.5" />
-    </svg>
-    <svg viewBox="0 0 24 24" width="15" height="15" fill="none"
-         stroke="currentColor" stroke-width="1.6"
-         stroke-linecap="round" stroke-linejoin="round" data-icon="moon">
-      <path d="M20.5 14.2A8.4 8.4 0 1 1 9.8 3.5a6.6 6.6 0 0 0 10.7 10.7Z" />
-    </svg>
-  </span>
-  <span data-theme-label>Dark</span>
-</button>
+<div class="theme" role="radiogroup" aria-label="Colour theme">
+  {options.map((o) => (
+    <button
+      type="button"
+      role="radio"
+      aria-checked="false"
+      data-theme-choice={o.value}
+    >
+      {o.label}
+    </button>
+  ))}
+</div>
 
 <style>
-  button {
+  .theme {
     display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-family: var(--font-sans);
-    font-size: var(--step--1);
-    color: var(--text-muted);
-    background: none;
+    gap: 0.15rem;
+    padding: 0.15rem;
     border: 1px solid var(--border);
     border-radius: 999px;
-    padding: 0.25rem 0.7rem;
+    font-family: var(--font-sans);
+    font-size: var(--step--1);
+  }
+
+  button {
+    font: inherit;
+    color: var(--text-muted);
+    background: none;
+    border: 0;
+    border-radius: 999px;
+    padding: 0.15rem 0.6rem;
     cursor: pointer;
+    transition: color 0.12s, background-color 0.12s;
   }
 
   button:hover {
     color: var(--text);
-    border-color: var(--accent);
   }
 
-  .icon {
-    display: grid;
-    place-items: center;
-    width: 15px;
-    height: 15px;
+  button[aria-checked='true'] {
+    color: var(--bg);
+    background: var(--text);
   }
 
-  /* Both icons occupy one cell; only the relevant one is shown. */
-  .icon svg {
-    grid-area: 1 / 1;
-    display: none;
+  /* The group owns the focus ring; the buttons sit inside it. */
+  button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
   }
 
-  [data-icon='moon'] { display: block; }
-
-  :global(:root[data-theme='dark']) [data-icon='moon'] { display: none; }
-  :global(:root[data-theme='dark']) [data-icon='sun'] { display: block; }
-
-  @media (prefers-color-scheme: dark) {
-    :global(:root:not([data-theme='light'])) [data-icon='moon'] { display: none; }
-    :global(:root:not([data-theme='light'])) [data-icon='sun'] { display: block; }
+  @media (prefers-reduced-motion: reduce) {
+    button {
+      transition: none;
+    }
   }
 </style>
 
 <script is:inline>
   (() => {
     const root = document.documentElement;
-    const media = window.matchMedia('(prefers-color-scheme: dark)');
+    const valid = ['auto', 'light', 'dark'];
 
-    const stored = () => {
+    const read = () => {
       try {
         const v = localStorage.getItem('theme');
-        return v === 'light' || v === 'dark' ? v : null;
+        return v === 'light' || v === 'dark' ? v : 'auto';
       } catch {
-        return null;
+        return 'auto';
       }
     };
 
-    // What is actually on screen right now.
-    const active = () => stored() ?? (media.matches ? 'dark' : 'light');
+    const apply = (choice) => {
+      if (choice === 'auto') root.removeAttribute('data-theme');
+      else root.setAttribute('data-theme', choice);
 
-    const sync = () => {
-      const next = active() === 'dark' ? 'light' : 'dark';
-      const btn = document.getElementById('theme-toggle');
-      const label = document.querySelector('[data-theme-label]');
-      if (label) label.textContent = next === 'dark' ? 'Dark' : 'Light';
-      if (btn) {
-        btn.setAttribute('aria-checked', String(active() === 'dark'));
-        btn.title = `Switch to ${next} mode`;
-      }
+      document.querySelectorAll('[data-theme-choice]').forEach((btn) => {
+        const on = btn.dataset.themeChoice === choice;
+        btn.setAttribute('aria-checked', String(on));
+        // Only the active option is a tab stop, per radiogroup convention.
+        btn.tabIndex = on ? 0 : -1;
+      });
     };
 
-    sync();
-
-    document.getElementById('theme-toggle')?.addEventListener('click', () => {
-      const next = active() === 'dark' ? 'light' : 'dark';
-      root.setAttribute('data-theme', next);
+    const store = (choice) => {
       try {
-        localStorage.setItem('theme', next);
+        if (choice === 'auto') localStorage.removeItem('theme');
+        else localStorage.setItem('theme', choice);
       } catch {}
-      sync();
+    };
+
+    apply(read());
+
+    const buttons = [...document.querySelectorAll('[data-theme-choice]')];
+
+    buttons.forEach((btn, i) => {
+      btn.addEventListener('click', () => {
+        const choice = btn.dataset.themeChoice;
+        store(choice);
+        apply(choice);
+      });
+
+      // Arrow keys move between options, as a radiogroup should.
+      btn.addEventListener('keydown', (e) => {
+        const step =
+          e.key === 'ArrowRight' || e.key === 'ArrowDown'
+            ? 1
+            : e.key === 'ArrowLeft' || e.key === 'ArrowUp'
+              ? -1
+              : 0;
+        if (!step) return;
+        e.preventDefault();
+        const next = buttons[(i + step + buttons.length) % buttons.length];
+        const choice = next.dataset.themeChoice;
+        store(choice);
+        apply(choice);
+        next.focus();
+      });
     });
 
-    // Follow the OS while the user has not made an explicit choice.
-    media.addEventListener('change', () => {
-      if (!stored()) sync();
+    // Keep other tabs in step.
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'theme') apply(read());
     });
   })();
 </script>

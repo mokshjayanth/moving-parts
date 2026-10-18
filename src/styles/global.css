@@ -6,12 +6,12 @@
 ---------------------------------------------------------------- */
 
 :root {
-  --bg: #fbfbf9;
-  --bg-subtle: #f2f2ee;
-  --text: #1a1a18;
-  --text-muted: #5f5f58;
-  --border: #e0e0d8;
-  --accent: #7a3b2e;
+  --bg: #faf9f6;
+  --bg-subtle: #f1efea;
+  --text: #1c1b19;
+  --text-muted: #6b665e;
+  --border: #ddd9d0;
+  --accent: #2d5a7b;
 
   --font-serif: Iowan Old Style, Palatino, Georgia, serif;
   --font-sans: -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif;
@@ -27,22 +27,22 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
-    --bg: #121211;
-    --bg-subtle: #1b1b19;
-    --text: #e8e8e2;
-    --text-muted: #9a9a90;
-    --border: #2e2e2a;
-    --accent: #d38a6f;
+    --bg: #14161a;
+    --bg-subtle: #1c1f24;
+    --text: #e6e4df;
+    --text-muted: #9a978f;
+    --border: #2b2f36;
+    --accent: #7fb3d5;
   }
 }
 
 :root[data-theme='dark'] {
-  --bg: #121211;
-  --bg-subtle: #1b1b19;
-  --text: #e8e8e2;
-  --text-muted: #9a9a90;
-  --border: #2e2e2a;
-  --accent: #d38a6f;
+  --bg: #14161a;
+  --bg-subtle: #1c1f24;
+  --text: #e6e4df;
+  --text-muted: #9a978f;
+  --border: #2b2f36;
+  --accent: #7fb3d5;
 }
 
 *,
