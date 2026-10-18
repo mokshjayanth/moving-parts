@@ -42,10 +42,29 @@ tags: []
 
 `draft: true` keeps a piece off the index and out of production builds.
 
-Reads is hand-maintained in `src/data/reads.json` — four shelves:
-`current`, `finished`, `queue`, `recommended`. Goodreads' API was retired
-in 2020; if this outgrows a JSON file, look at Open Library, Hardcover or
-Literal.
+## Reads
+
+`src/data/reads.json` is generated from the Goodreads RSS feed and
+committed. Goodreads retired its API in 2020, but the per-user RSS feeds
+still work.
+
+```sh
+cp .env.example .env   # paste your feed URL
+npm run sync:reads
+```
+
+The feed URL carries a private key, so it lives in `.env` locally and in
+the `GOODREADS_RSS_URL` repository secret on CI — never in the repo.
+
+CI re-syncs on every deploy and on a daily cron. If Goodreads is
+unreachable the script logs it, exits 0 and leaves the committed JSON in
+place, so an outage there cannot fail a deploy.
+
+Shelves are inferred from `user_shelves`: `currently-reading` → current,
+`to-read` → up next, `did-not-finish` → put down, everything else →
+read. Goodreads does not emit an explicit `read` shelf, which is why
+that last case is a fallback. If a book lands in the wrong place, fix
+its shelves on Goodreads and re-sync.
 
 ## Theme
 

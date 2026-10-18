@@ -3,6 +3,9 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
+  schedule:
+    # Refresh the Goodreads shelf once a day, 06:00 UTC.
+    - cron: '0 6 * * *'
   workflow_dispatch:
 
 permissions:
@@ -19,12 +22,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version-file: .nvmrc
           cache: npm
+
       - run: npm ci
+
+      # Falls back to the committed src/data/reads.json if Goodreads
+      # is unreachable, so an outage there cannot fail the deploy.
+      - name: Sync reads from Goodreads
+        env:
+          GOODREADS_RSS_URL: ${{ secrets.GOODREADS_RSS_URL }}
+        run: node scripts/fetch-reads.mjs
+
       - run: npm run build
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist

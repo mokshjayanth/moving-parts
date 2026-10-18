@@ -1,30 +1,134 @@
 {
+  "updated": "2026-10-18T10:45:42.162Z",
+  "source": "goodreads-rss",
   "current": [
     {
+      "id": "291920",
       "title": "The Character of Physical Law",
-      "author": "Richard Feynman",
-      "note": "Rereading for the chapter on conservation."
+      "author": "Richard P. Feynman",
+      "link": "https://www.goodreads.com/review/show/9034809438?utm_medium=api&utm_source=rss",
+      "cover": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1347507304l/291920._SX98_.jpg",
+      "readAt": null,
+      "addedAt": "2026-10-18",
+      "review": ""
     }
   ],
   "finished": [
     {
-      "title": "Thinking in Systems",
-      "author": "Donella Meadows",
-      "year": 2025,
-      "note": ""
+      "id": "55148500",
+      "title": "The Almanack of Naval Ravikant: A Guide to Wealth and Happiness",
+      "author": "Eric Jorgenson",
+      "link": "https://www.goodreads.com/review/show/6198032149?utm_medium=api&utm_source=rss",
+      "cover": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1598580480l/55148500._SX98_.jpg",
+      "readAt": "2026-10-18",
+      "addedAt": "2026-10-18",
+      "review": ""
+    },
+    {
+      "id": "41881472",
+      "title": "The Psychology of Money: Timeless Lessons on Wealth, Greed, and Happiness",
+      "author": "Morgan Housel",
+      "link": "https://www.goodreads.com/review/show/5758210151?utm_medium=api&utm_source=rss",
+      "cover": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1581527774l/41881472._SX98_.jpg",
+      "readAt": "2023-10-19",
+      "addedAt": "2023-10-20",
+      "review": "",
+      "rating": 4
+    },
+    {
+      "id": "56447987",
+      "title": "The Millionaire Fast Lane: Crack the Code to Wealth and Live Rich for a Lifetime",
+      "author": "M.J. DeMarco",
+      "link": "https://www.goodreads.com/review/show/5398389779?utm_medium=api&utm_source=rss",
+      "cover": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1609174688l/56447987._SX98_.jpg",
+      "readAt": "2023-08-10",
+      "addedAt": "2023-08-10",
+      "review": "",
+      "rating": 5
+    },
+    {
+      "id": "195589455",
+      "title": "Meditations: A New Translation",
+      "author": "Marcus Aurelius",
+      "link": "https://www.goodreads.com/review/show/9034815128?utm_medium=api&utm_source=rss",
+      "cover": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1691172738l/195589455._SX98_.jpg",
+      "readAt": null,
+      "addedAt": "2026-10-18",
+      "review": ""
     }
   ],
   "queue": [
     {
-      "title": "Gödel, Escher, Bach",
-      "author": "Douglas Hofstadter"
+      "id": "40121378",
+      "title": "Atomic Habits: An Easy & Proven Way to Build Good Habits & Break Bad Ones",
+      "author": "James Clear",
+      "link": "https://www.goodreads.com/review/show/9034812461?utm_medium=api&utm_source=rss",
+      "cover": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1655988385l/40121378._SX98_.jpg",
+      "readAt": null,
+      "addedAt": "2026-10-18",
+      "review": ""
+    },
+    {
+      "id": "43330",
+      "title": "Master of the Game",
+      "author": "Sidney Sheldon",
+      "link": "https://www.goodreads.com/review/show/9034812005?utm_medium=api&utm_source=rss",
+      "cover": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1170095440l/43330._SX98_.jpg",
+      "readAt": null,
+      "addedAt": "2026-10-18",
+      "review": ""
+    },
+    {
+      "id": "3828902",
+      "title": "Thinking In Systems: A Primer",
+      "author": "Donella H. Meadows",
+      "link": "https://www.goodreads.com/review/show/9034810005?utm_medium=api&utm_source=rss",
+      "cover": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1390169859l/3828902._SX98_.jpg",
+      "readAt": null,
+      "addedAt": "2026-10-18",
+      "review": ""
+    },
+    {
+      "id": "6596",
+      "title": "The Four Agreements: A Practical Guide to Personal Freedom",
+      "author": "Miguel Ruiz",
+      "link": "https://www.goodreads.com/review/show/6198040120?utm_medium=api&utm_source=rss",
+      "cover": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1630664059l/6596._SX98_.jpg",
+      "readAt": null,
+      "addedAt": "2024-01-23",
+      "review": ""
+    },
+    {
+      "id": "944652",
+      "title": "Poor Charlie's Almanack: The Wit and Wisdom of Charles T. Munger",
+      "author": "Charles T. Munger",
+      "link": "https://www.goodreads.com/review/show/6198032887?utm_medium=api&utm_source=rss",
+      "cover": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1387744370l/944652._SX98_.jpg",
+      "readAt": null,
+      "addedAt": "2024-01-23",
+      "review": ""
+    },
+    {
+      "id": "1760630",
+      "title": "Self-Reliance: An Excerpt from Collected Essays, First Series",
+      "author": "Ralph Waldo Emerson",
+      "link": "https://www.goodreads.com/review/show/5398397821?utm_medium=api&utm_source=rss",
+      "cover": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1347244627l/1760630._SX98_.jpg",
+      "readAt": null,
+      "addedAt": "2023-03-08",
+      "review": ""
     }
   ],
-  "recommended": [
+  "abandoned": [
     {
-      "title": "The Design of Everyday Things",
-      "author": "Don Norman",
-      "note": "The clearest book about why things feel broken."
+      "id": "40695844",
+      "title": "The 7 Habits of Highly Effective People",
+      "author": "Stephen R. Covey",
+      "link": "https://www.goodreads.com/review/show/9034815964?utm_medium=api&utm_source=rss",
+      "cover": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1530568393l/40695844._SX98_.jpg",
+      "readAt": null,
+      "addedAt": "2026-10-18",
+      "review": ""
     }
   ]
 }

@@ -1,14 +1,31 @@
 ---
-// Cycles system -> light -> dark. The chosen value is stored in
-// localStorage; "system" removes the override entirely.
+// Two states: light and dark. With nothing stored we follow the system
+// setting, so the first click always flips away from what is on screen.
+// Once clicked the choice is explicit and persists.
 ---
 
-<button id="theme-toggle" type="button" aria-label="Switch colour theme">
-  <span data-theme-label>Theme</span>
+<button id="theme-toggle" type="button" role="switch" aria-label="Dark mode">
+  <span class="icon" aria-hidden="true">
+    <svg viewBox="0 0 24 24" width="15" height="15" fill="none"
+         stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" data-icon="sun">
+      <circle cx="12" cy="12" r="4.2" />
+      <path d="M12 2.6v2.1M12 19.3v2.1M4.3 4.3l1.5 1.5M18.2 18.2l1.5 1.5M2.6 12h2.1M19.3 12h2.1M4.3 19.7l1.5-1.5M18.2 5.8l1.5-1.5" />
+    </svg>
+    <svg viewBox="0 0 24 24" width="15" height="15" fill="none"
+         stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round" data-icon="moon">
+      <path d="M20.5 14.2A8.4 8.4 0 1 1 9.8 3.5a6.6 6.6 0 0 0 10.7 10.7Z" />
+    </svg>
+  </span>
+  <span data-theme-label>Dark</span>
 </button>
 
 <style>
   button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
     font-family: var(--font-sans);
     font-size: var(--step--1);
     color: var(--text-muted);
@@ -23,35 +40,73 @@
     color: var(--text);
     border-color: var(--accent);
   }
+
+  .icon {
+    display: grid;
+    place-items: center;
+    width: 15px;
+    height: 15px;
+  }
+
+  /* Both icons occupy one cell; only the relevant one is shown. */
+  .icon svg {
+    grid-area: 1 / 1;
+    display: none;
+  }
+
+  [data-icon='moon'] { display: block; }
+
+  :global(:root[data-theme='dark']) [data-icon='moon'] { display: none; }
+  :global(:root[data-theme='dark']) [data-icon='sun'] { display: block; }
+
+  @media (prefers-color-scheme: dark) {
+    :global(:root:not([data-theme='light'])) [data-icon='moon'] { display: none; }
+    :global(:root:not([data-theme='light'])) [data-icon='sun'] { display: block; }
+  }
 </style>
 
 <script is:inline>
   (() => {
-    const order = ['system', 'light', 'dark'];
-    const label = { system: 'Auto', light: 'Light', dark: 'Dark' };
+    const root = document.documentElement;
+    const media = window.matchMedia('(prefers-color-scheme: dark)');
 
-    const apply = (mode) => {
-      const root = document.documentElement;
-      if (mode === 'system') root.removeAttribute('data-theme');
-      else root.setAttribute('data-theme', mode);
-      const el = document.querySelector('[data-theme-label]');
-      if (el) el.textContent = label[mode];
+    const stored = () => {
+      try {
+        const v = localStorage.getItem('theme');
+        return v === 'light' || v === 'dark' ? v : null;
+      } catch {
+        return null;
+      }
     };
 
-    let current = 'system';
-    try {
-      current = localStorage.getItem('theme') || 'system';
-    } catch {}
-    if (!order.includes(current)) current = 'system';
-    apply(current);
+    // What is actually on screen right now.
+    const active = () => stored() ?? (media.matches ? 'dark' : 'light');
+
+    const sync = () => {
+      const next = active() === 'dark' ? 'light' : 'dark';
+      const btn = document.getElementById('theme-toggle');
+      const label = document.querySelector('[data-theme-label]');
+      if (label) label.textContent = next === 'dark' ? 'Dark' : 'Light';
+      if (btn) {
+        btn.setAttribute('aria-checked', String(active() === 'dark'));
+        btn.title = `Switch to ${next} mode`;
+      }
+    };
+
+    sync();
 
     document.getElementById('theme-toggle')?.addEventListener('click', () => {
-      current = order[(order.indexOf(current) + 1) % order.length];
-      apply(current);
+      const next = active() === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
       try {
-        if (current === 'system') localStorage.removeItem('theme');
-        else localStorage.setItem('theme', current);
+        localStorage.setItem('theme', next);
       } catch {}
+      sync();
+    });
+
+    // Follow the OS while the user has not made an explicit choice.
+    media.addEventListener('change', () => {
+      if (!stored()) sync();
     });
   })();
 </script>

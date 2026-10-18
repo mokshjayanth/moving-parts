@@ -2,42 +2,80 @@
 import Base from '../layouts/Base.astro';
 import reads from '../data/reads.json';
 
-// Hand-maintained for now: edit src/data/reads.json.
-// Goodreads' API is retired; if this ever outgrows a JSON file the
-// candidates are Open Library, Hardcover or Literal.
-const shelves = [
-  { key: 'current', heading: 'Currently reading' },
-  { key: 'finished', heading: 'Finished' },
-  { key: 'queue', heading: 'Up next' },
-  { key: 'recommended', heading: 'Recommendations' },
-] as const;
+// Generated from the Goodreads RSS feed by scripts/fetch-reads.mjs and
+// committed, so a Goodreads outage cannot break a build.
 
 type Book = {
+  id: string;
   title: string;
   author: string;
-  year?: number;
-  note?: string;
+  link: string;
+  cover: string;
+  readAt: string | null;
+  addedAt: string | null;
+  rating?: number;
+  review?: string;
 };
 
-const data = reads as Record<string, Book[]>;
+type Shelf = { key: keyof typeof reads; heading: string; note?: string };
+
+const shelves: Shelf[] = [
+  { key: 'current', heading: 'Currently reading' },
+  { key: 'finished', heading: 'Read' },
+  { key: 'queue', heading: 'Up next' },
+  { key: 'abandoned', heading: 'Put down', note: 'Started, not finished.' },
+];
+
+const data = reads as unknown as Record<string, Book[]> & { updated: string | null };
+
+const year = (iso: string | null) => (iso ? iso.slice(0, 4) : null);
+
+const updated = data.updated
+  ? new Date(data.updated).toLocaleDateString('en-GB', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    })
+  : null;
 ---
 
 <Base title="Reads — Moving Parts" description="What I'm reading.">
   <h1>Reads</h1>
 
-  {shelves.map(({ key, heading }) => {
-    const books = data[key] ?? [];
+  {shelves.map(({ key, heading, note }) => {
+    const books = (data[key] ?? []) as Book[];
     if (books.length === 0) return null;
     return (
       <section>
-        <h2>{heading}</h2>
+        <h2>
+          {heading} <span class="count">{books.length}</span>
+        </h2>
+        {note && <p class="note">{note}</p>}
         <ul class="books">
           {books.map((book) => (
             <li>
-              <span class="title">{book.title}</span>
-              <span class="author">{book.author}</span>
-              {book.year && <span class="year">{book.year}</span>}
-              {book.note && <p class="note">{book.note}</p>}
+              {book.cover && (
+                <img
+                  src={book.cover}
+                  alt=""
+                  width="48"
+                  height="72"
+                  loading="lazy"
+                  decoding="async"
+                />
+              )}
+              <div class="meta">
+                <a href={book.link} class="title">{book.title}</a>
+                <p class="byline">
+                  {book.author}
+                  {year(book.readAt) && <span class="year">{year(book.readAt)}</span>}
+                  {book.rating && (
+                    <span class="rating" title={`${book.rating} out of 5`}>
+                      {'★'.repeat(book.rating)}
+                    </span>
+                  )}
+                </p>
+              </div>
             </li>
           ))}
         </ul>
@@ -45,44 +83,92 @@ const data = reads as Record<string, Book[]>;
     );
   })}
 
+  {updated && <p class="updated">Synced from Goodreads on {updated}.</p>}
+
   <style>
     section {
       margin-block-start: 3rem;
     }
 
     h2 {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
       font-size: var(--step-1);
       padding-block-end: 0.4rem;
       border-block-end: 1px solid var(--border);
     }
 
+    .count {
+      font-size: var(--step--1);
+      font-weight: 400;
+      color: var(--text-muted);
+    }
+
+    .note {
+      margin-block: 0.6rem 0;
+      font-size: var(--step--1);
+      color: var(--text-muted);
+    }
+
     .books {
       list-style: none;
       padding: 0;
+      margin-block-start: 1.5rem;
       display: grid;
-      gap: 1.25rem;
+      gap: 1.4rem;
+    }
+
+    .books li {
+      display: grid;
+      grid-template-columns: 48px 1fr;
+      gap: 1rem;
+      align-items: start;
+    }
+
+    .books img {
+      width: 48px;
+      height: auto;
+      border-radius: 2px;
+      background: var(--bg-subtle);
     }
 
     .title {
-      display: block;
       font-weight: 600;
+      text-decoration: none;
+      text-wrap: balance;
     }
 
-    .author,
-    .year {
+    .title:hover {
+      text-decoration: underline;
+      text-decoration-color: var(--accent);
+    }
+
+    .byline {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin: 0.2rem 0 0;
       font-family: var(--font-sans);
       font-size: var(--step--1);
       color: var(--text-muted);
     }
 
-    .year::before {
-      content: ' · ';
+    .year::before,
+    .rating::before {
+      content: '· ';
     }
 
-    .note {
-      margin: 0.3rem 0 0;
-      color: var(--text-muted);
+    .rating {
+      color: var(--accent);
+      letter-spacing: 0.05em;
+    }
+
+    .updated {
+      margin-block-start: 4rem;
+      font-family: var(--font-sans);
       font-size: var(--step--1);
+      color: var(--text-muted);
     }
   </style>
 </Base>
