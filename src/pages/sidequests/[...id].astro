@@ -12,19 +12,47 @@ export async function getStaticPaths() {
 
 const { quest } = Astro.props;
 const { Content } = await render(quest);
+const { title, description, started, finished, status, stack, links } = quest.data;
 
-const fmt = (d: Date) =>
+const month = (d: Date) =>
   d.toLocaleDateString('en-GB', { year: 'numeric', month: 'long' });
+
+const when =
+  status === 'done' && finished
+    ? `${month(started)} – ${month(finished)}`
+    : `Started ${month(started)}`;
 ---
 
-<Base title={`${quest.data.title} — Moving Parts`} description={quest.data.description}>
+<Base title={`${title} — Moving Parts`} description={description}>
   <article>
     <header class="head">
-      <h1>{quest.data.title}</h1>
-      <p class="meta">
-        <span class="status">{quest.data.status}</span>
-        <span>since {fmt(quest.data.started)}</span>
-      </p>
+      <h1>{title}</h1>
+      <dl class="facts">
+        <div>
+          <dt>Status</dt>
+          <dd class={`status status--${status}`}>{status}</dd>
+        </div>
+        <div>
+          <dt>When</dt>
+          <dd>{when}</dd>
+        </div>
+        {stack.length > 0 && (
+          <div>
+            <dt>Built with</dt>
+            <dd>{stack.join(' · ')}</dd>
+          </div>
+        )}
+        {links.length > 0 && (
+          <div>
+            <dt>Links</dt>
+            <dd>
+              {links.map((link) => (
+                <a href={link.href} rel="noopener">{link.label}</a>
+              ))}
+            </dd>
+          </div>
+        )}
+      </dl>
     </header>
 
     <div class="prose">
@@ -37,23 +65,60 @@ const fmt = (d: Date) =>
       margin-block-end: 2.5rem;
     }
 
-    .meta {
+    .facts {
+      display: grid;
+      gap: 0.5rem 1.5rem;
+      margin: 1.25rem 0 0;
+      padding-block: 1rem;
+      border-block: 1px solid var(--border);
       font-family: var(--font-sans);
       font-size: var(--step--1);
-      color: var(--text-muted);
-      display: flex;
+    }
+
+    .facts > div {
+      display: grid;
+      grid-template-columns: 6.5rem 1fr;
       gap: 0.75rem;
-      align-items: center;
+    }
+
+    .facts dt {
+      color: var(--text-muted);
+    }
+
+    .facts dd {
+      margin: 0;
+    }
+
+    .facts dd a + a {
+      margin-inline-start: 0.75rem;
     }
 
     .status {
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      padding: 0.1rem 0.5rem;
+      text-transform: lowercase;
+    }
+
+    .status--active {
+      color: var(--accent);
     }
 
     .prose :global(h2) {
       margin-block: 2.5rem 0.75rem;
+      font-size: var(--step-1);
+    }
+
+    .prose :global(ul) {
+      padding-inline-start: 1.1rem;
+    }
+
+    .prose :global(li) {
+      margin-block: 0.4rem;
+    }
+
+    .prose :global(blockquote) {
+      margin-inline: 0;
+      padding-inline-start: 1rem;
+      border-inline-start: 2px solid var(--border);
+      color: var(--text-muted);
     }
   </style>
 </Base>

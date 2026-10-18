@@ -42,6 +42,25 @@ tags: []
 
 `draft: true` keeps a piece off the index and out of production builds.
 
+A side quest:
+
+```yaml
+---
+title: Castlevania Atlas
+description: Used in meta tags.
+blurb: One line, shown on the index.
+started: 2026-09-01
+finished: 2026-10-17     # omit while in progress
+status: done             # active | paused | done
+stack: ['JavaScript', 'esbuild']
+links:
+  - label: Source
+    href: https://github.com/...
+---
+```
+
+The index groups them: in-progress first, finished below.
+
 ## Reads
 
 `src/data/reads.json` is generated from the Goodreads RSS feed and

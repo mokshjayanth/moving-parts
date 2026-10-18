@@ -3,87 +3,139 @@ import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const quests = (await getCollection('sidequests', ({ data }) => !data.draft)).sort(
-  (a, b) => b.data.started.valueOf() - a.data.started.valueOf()
-);
+const all = await getCollection('sidequests', ({ data }) => !data.draft);
 
-const fmt = (d: Date) =>
-  d.toLocaleDateString('en-GB', { year: 'numeric', month: 'long' });
+const recent = (a: { data: { started: Date } }, b: { data: { started: Date } }) =>
+  b.data.started.valueOf() - a.data.started.valueOf();
+
+// In-progress work leads; finished things are the record below it.
+const groups = [
+  {
+    heading: 'In progress',
+    items: all.filter((q) => q.data.status !== 'done').sort(recent),
+  },
+  {
+    heading: 'Finished',
+    items: all.filter((q) => q.data.status === 'done').sort(recent),
+  },
+];
+
+const year = (d?: Date) => (d ? String(d.getFullYear()) : null);
+
+const span = (started: Date, finished?: Date, status?: string) => {
+  const from = year(started);
+  if (status !== 'done') return `since ${from}`;
+  const to = year(finished);
+  return !to || to === from ? from : `${from}–${to}`;
+};
 ---
 
-<Base title="Side Quests — Moving Parts" description="Hobbies in progress.">
+<Base title="Side Quests — Moving Parts" description="Things I'm making and learning.">
   <h1>Side Quests</h1>
-  <p class="lede">Things I'm learning, in whatever state they're in.</p>
+  <p class="lede">
+    Things I'm making and learning, in whatever state they're in.
+  </p>
 
-  {quests.length === 0 ? (
-    <p class="empty">Nothing here yet.</p>
-  ) : (
-    <ul class="list">
-      {quests.map((quest) => (
-        <li>
-          <a href={`${base}/sidequests/${quest.id}`}>{quest.data.title}</a>
-          <p class="meta">
-            <span class={`status status--${quest.data.status}`}>
-              {quest.data.status}
-            </span>
-            <span>since {fmt(quest.data.started)}</span>
-          </p>
-          <p class="desc">{quest.data.description}</p>
-        </li>
-      ))}
-    </ul>
+  {all.length === 0 && <p class="empty">Nothing here yet.</p>}
+
+  {groups.map(({ heading, items }) =>
+    items.length === 0 ? null : (
+      <section>
+        <h2>{heading}</h2>
+        <ul class="list">
+          {items.map((quest) => (
+            <li>
+              <div class="head">
+                <a href={`${base}/sidequests/${quest.id}`}>{quest.data.title}</a>
+                {quest.data.status === 'paused' && (
+                  <span class="tag">paused</span>
+                )}
+              </div>
+              <p class="meta">
+                {span(quest.data.started, quest.data.finished, quest.data.status)}
+                {quest.data.stack.length > 0 && (
+                  <span class="stack">{quest.data.stack.join(' · ')}</span>
+                )}
+              </p>
+              <p class="desc">{quest.data.blurb ?? quest.data.description}</p>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
   )}
 
   <style>
     .lede {
       color: var(--text-muted);
+      text-wrap: pretty;
+      max-width: 30rem;
+    }
+
+    section {
+      margin-block-start: 3rem;
+    }
+
+    section h2 {
+      font-size: var(--step-1);
+      padding-block-end: 0.4rem;
+      border-block-end: 1px solid var(--border);
     }
 
     .list {
       list-style: none;
       padding: 0;
       display: grid;
-      gap: 2.5rem;
-      margin-block-start: 2.5rem;
+      gap: 2.25rem;
+      margin-block-start: 1.75rem;
     }
 
-    .list > li > a {
+    .head {
+      display: flex;
+      align-items: baseline;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+    }
+
+    .head a {
       font-family: var(--font-sans);
       font-size: var(--step-1);
       font-weight: 600;
       text-decoration: none;
     }
 
-    .list > li > a:hover {
+    .head a:hover {
       text-decoration: underline;
       text-decoration-color: var(--accent);
     }
 
-    .meta {
-      margin: 0.25rem 0 0.5rem;
+    .tag {
       font-family: var(--font-sans);
       font-size: var(--step--1);
       color: var(--text-muted);
-      display: flex;
-      gap: 0.6rem;
-      align-items: center;
-    }
-
-    .status {
       border: 1px solid var(--border);
       border-radius: 999px;
-      padding: 0.1rem 0.5rem;
-      text-transform: lowercase;
+      padding: 0.05rem 0.5rem;
     }
 
-    .status--active {
-      border-color: var(--accent);
-      color: var(--accent);
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin: 0.3rem 0 0.5rem;
+      font-family: var(--font-sans);
+      font-size: var(--step--1);
+      color: var(--text-muted);
+    }
+
+    .stack::before {
+      content: '· ';
     }
 
     .desc {
       margin: 0;
       color: var(--text-muted);
+      text-wrap: pretty;
     }
 
     .empty {
