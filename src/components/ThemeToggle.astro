@@ -1,70 +1,85 @@
 ---
 /**
- * Theme control: Auto, Light, Dark.
+ * Theme control: cycles Auto → Light → Dark.
  *
- * Auto is the default and follows the OS. Picking Light or Dark stores
- * an explicit override; picking Auto clears it, so the site can always
- * be handed back to the system setting.
+ * Three states, not two, so the site can always be handed back to the
+ * OS setting — a two-state toggle locks you out of Auto on first tap.
+ * One button rather than three keeps it to a single tap target, which
+ * matters at phone width where the header already wraps.
  *
- * Rendered as a radiogroup rather than a switch: three states, each
- * with a stable name, which is what assistive tech expects.
+ * The icon shows the state that is currently in force; the accessible
+ * name says so in words, and announces what a tap will do.
  */
-
-const options = [
-  { value: 'auto', label: 'Auto' },
-  { value: 'light', label: 'Light' },
-  { value: 'dark', label: 'Dark' },
-];
 ---
 
-<div class="theme" role="radiogroup" aria-label="Colour theme">
-  {options.map((o) => (
-    <button
-      type="button"
-      role="radio"
-      aria-checked="false"
-      data-theme-choice={o.value}
-    >
-      {o.label}
-    </button>
-  ))}
-</div>
+<button id="theme-toggle" type="button">
+  <span class="icon" aria-hidden="true">
+    <!-- auto: a dial, half filled -->
+    <svg viewBox="0 0 24 24" width="16" height="16" data-icon="auto">
+      <circle cx="12" cy="12" r="8.4" fill="none" stroke="currentColor"
+              stroke-width="1.6" />
+      <path d="M12 3.6a8.4 8.4 0 0 0 0 16.8Z" fill="currentColor" />
+    </svg>
+
+    <!-- light: sun -->
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none"
+         stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+         data-icon="light">
+      <circle cx="12" cy="12" r="4.2" />
+      <path d="M12 2.6v2.1M12 19.3v2.1M4.3 4.3l1.5 1.5M18.2 18.2l1.5 1.5M2.6 12h2.1M19.3 12h2.1M4.3 19.7l1.5-1.5M18.2 5.8l1.5-1.5" />
+    </svg>
+
+    <!-- dark: moon -->
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none"
+         stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+         stroke-linejoin="round" data-icon="dark">
+      <path d="M20.5 14.2A8.4 8.4 0 1 1 9.8 3.5a6.6 6.6 0 0 0 10.7 10.7Z" />
+    </svg>
+  </span>
+</button>
 
 <style>
-  .theme {
-    display: inline-flex;
-    gap: 0.15rem;
-    padding: 0.15rem;
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    font-family: var(--font-sans);
-    font-size: var(--step--1);
-  }
-
   button {
-    font: inherit;
+    display: inline-grid;
+    place-items: center;
+    /* 44px tap target, per the usual mobile minimum. */
+    inline-size: 2.75rem;
+    block-size: 2.75rem;
     color: var(--text-muted);
     background: none;
-    border: 0;
+    border: 1px solid var(--border);
     border-radius: 999px;
-    padding: 0.15rem 0.6rem;
     cursor: pointer;
-    transition: color 0.12s, background-color 0.12s;
+    transition: color 0.12s, border-color 0.12s;
   }
 
   button:hover {
     color: var(--text);
+    border-color: var(--accent);
   }
 
-  button[aria-checked='true'] {
-    color: var(--bg);
-    background: var(--text);
+  .icon {
+    display: grid;
+    place-items: center;
+    inline-size: 16px;
+    block-size: 16px;
   }
 
-  /* The group owns the focus ring; the buttons sit inside it. */
-  button:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 1px;
+  /* All three glyphs share one cell; the state picks which shows. */
+  .icon svg {
+    grid-area: 1 / 1;
+    display: none;
+  }
+
+  :global(:root[data-theme-choice='auto']) [data-icon='auto'],
+  :global(:root[data-theme-choice='light']) [data-icon='light'],
+  :global(:root[data-theme-choice='dark']) [data-icon='dark'] {
+    display: block;
+  }
+
+  /* Before the script runs, show the auto glyph rather than nothing. */
+  :global(:root:not([data-theme-choice])) [data-icon='auto'] {
+    display: block;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -77,7 +92,12 @@ const options = [
 <script is:inline>
   (() => {
     const root = document.documentElement;
-    const valid = ['auto', 'light', 'dark'];
+    const order = ['auto', 'light', 'dark'];
+    const says = {
+      auto: 'Theme: following system. Switch to light.',
+      light: 'Theme: light. Switch to dark.',
+      dark: 'Theme: dark. Switch to system.',
+    };
 
     const read = () => {
       try {
@@ -91,52 +111,26 @@ const options = [
     const apply = (choice) => {
       if (choice === 'auto') root.removeAttribute('data-theme');
       else root.setAttribute('data-theme', choice);
+      root.setAttribute('data-theme-choice', choice);
 
-      document.querySelectorAll('[data-theme-choice]').forEach((btn) => {
-        const on = btn.dataset.themeChoice === choice;
-        btn.setAttribute('aria-checked', String(on));
-        // Only the active option is a tab stop, per radiogroup convention.
-        btn.tabIndex = on ? 0 : -1;
-      });
-    };
-
-    const store = (choice) => {
-      try {
-        if (choice === 'auto') localStorage.removeItem('theme');
-        else localStorage.setItem('theme', choice);
-      } catch {}
+      const btn = document.getElementById('theme-toggle');
+      if (btn) {
+        btn.setAttribute('aria-label', says[choice]);
+        btn.title = says[choice];
+      }
     };
 
     apply(read());
 
-    const buttons = [...document.querySelectorAll('[data-theme-choice]')];
-
-    buttons.forEach((btn, i) => {
-      btn.addEventListener('click', () => {
-        const choice = btn.dataset.themeChoice;
-        store(choice);
-        apply(choice);
-      });
-
-      // Arrow keys move between options, as a radiogroup should.
-      btn.addEventListener('keydown', (e) => {
-        const step =
-          e.key === 'ArrowRight' || e.key === 'ArrowDown'
-            ? 1
-            : e.key === 'ArrowLeft' || e.key === 'ArrowUp'
-              ? -1
-              : 0;
-        if (!step) return;
-        e.preventDefault();
-        const next = buttons[(i + step + buttons.length) % buttons.length];
-        const choice = next.dataset.themeChoice;
-        store(choice);
-        apply(choice);
-        next.focus();
-      });
+    document.getElementById('theme-toggle')?.addEventListener('click', () => {
+      const next = order[(order.indexOf(read()) + 1) % order.length];
+      try {
+        if (next === 'auto') localStorage.removeItem('theme');
+        else localStorage.setItem('theme', next);
+      } catch {}
+      apply(next);
     });
 
-    // Keep other tabs in step.
     window.addEventListener('storage', (e) => {
       if (e.key === 'theme') apply(read());
     });
